@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	constexpr int window_width  = 800;
 	constexpr int window_height = 800;
 	constexpr bool fullscreen = false;
-	constexpr char* window_title = "Vulkan Launchpad Starter";
+	constexpr char* window_title = "CPSC 453: VulkanLaunchpadStarter Complete Demo";
 
 	// Use a monitor if we'd like to open the window in fullscreen mode:
 	GLFWmonitor* monitor = nullptr;
