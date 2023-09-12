@@ -33,20 +33,22 @@ endif()
 #=======================================#
 add_subdirectory(VulkanLaunchpadStarter)
 
+set(PROJECT_NAME StarterDemo)
+
 #=============#
 # StarterDemo #
 #=============#
-add_executable(StarterDemo 
+add_executable(${PROJECT_NAME} 
     Demo/src/Main.cpp 
     VulkanLaunchpadStarter/src/VulkanHelpers.h
     VulkanLaunchpadStarter/src/VulkanHelpers.cpp 
     VulkanLaunchpadStarter/src/Teapot.h 
     VulkanLaunchpadStarter/src/Teapot.cpp 
 )
-target_link_libraries(StarterDemo PRIVATE VulkanLaunchpad)
-target_include_directories(StarterDemo PRIVATE VulkanLaunchpadStarter/src)
-add_dependencies(StarterDemo VulkanLaunchpadStarter)
-install(TARGETS StarterDemo RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE VulkanLaunchpad)
+target_include_directories(${PROJECT_NAME} PRIVATE VulkanLaunchpadStarter/src)
+add_dependencies(${PROJECT_NAME} VulkanLaunchpadStarter)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
 #================================#
 # IDE specific setup              #
