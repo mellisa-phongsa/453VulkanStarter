@@ -6,7 +6,7 @@ It is based on the [VulkanLaunchpadStarter](https://github.com/cg-tuwien/VulkanL
 
 ## Setup
 
-1. Clone this repository.
+1. Clone this repository and switch to this branch.
 2. `VulkanLaunchpadStarter` and its dependencies are added to this repository as submodules. Please update submodules by issuing the following command:
     ```bash
     git submodule update --init --recursive
@@ -18,11 +18,21 @@ It is based on the [VulkanLaunchpadStarter](https://github.com/cg-tuwien/VulkanL
    ```bash
     git checkout <commit hash>
    ``` 
-3. Compile via CMake. Please review the [Setup Instructions](https://github.com/cg-tuwien/VulkanLaunchpad#setup-instructions) for `VulkanLaunchpadStarter`` to setup your IDE and build environment.
+3. Compile via CMake. Please review the [Setup Instructions](https://github.com/cg-tuwien/VulkanLaunchpad#setup-instructions) for `VulkanLaunchpadStarter` to setup your IDE and build environment.
 
 ## Available Examples and Skeletons
 
-This repository consists of the following:
-- `/Demo`:
+This repository branch consists of the following:
+- `/HW1`:
 
-  A fully functioning example that renders a teapot using the basic graphics pipeline provided by `VulkanLaunchpad`. It is just a completion of the TO DO tasks left out in the example provided by `VulkanLaunchpadStarter`.
+  A fully functioning example that renders the polar plot $r = 0.8\,\cos(2\theta)$ in 2D in the 
+  canonical Vulkan coordinate system where $-1 \le x \le 1$ and $-1 \le y \le 1$. For rendering, the plot is sampled at equally-spaced $\theta$ intervals and the resulting points (in Cartesian coordinates) are connected via line strips.
+  In this example, all point geometry is created and managed on the CPU. Transformations are also handled on the CPU. The point geometry is sent over to the GPU for drawing as line strips.
+
+  Transformations consist of simple translations in the $x$ and $y$ directions that are controlled
+  by the cursor keys. The drawing wraps around when the center of the plot reaches the edge of the window.
+
+
+  This example serves as the starter code for HW1 in CPSC 453 (Introduction to Computer Graphics) at the University of Calgary.
+  
+  

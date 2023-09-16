@@ -1,6 +1,5 @@
 /** 
- * A complete demo that fills in the TO DO tasks in VulkanLaunchpadStarter
- * and adds a teapot rendered using the basic pipeline.
+ * Starter main file for HW1.
  * 
  * CPSC 453 | Fall 2023 | University of Calgary
  * 
@@ -15,7 +14,7 @@
 
 // Include some local helper functions:
 #include "VulkanHelpers.h"
-#include "Teapot.h"
+#include "LineGeometry.h"
 
 // Include functionality from the standard library:
 #include <vector>
@@ -67,10 +66,23 @@ std::vector<const char*> getRequiredInstanceExtensions();
  */
 uint32_t selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkSurfaceKHR surface);
 
+
+// tx and ty keep track of wrap around
+float tx = 0.0f;
+float ty = 0.0f;
+
+// The incremental/decremental translation amount 
+const float Dx = 0.01f;
+const float Dy = 0.01f;
+
+// (dx, dy) is the actual translation that is applied
+// everytime the user presses a cursor key. 
+float dx = 0.0f;
+float dy = 0.0f;
+
 /* ------------------------------------------------ */
 // Main
 /* ------------------------------------------------ */
-
 int main(int argc, char** argv)
 {
 	VKL_LOG(":::::: WELCOME TO VULKAN LAUNCHPAD ::::::");
@@ -86,10 +98,10 @@ int main(int argc, char** argv)
 	/* --------------------------------------------- */
 	// Task 1.1: Create a Window with GLFW
 	/* --------------------------------------------- */
-	constexpr int window_width  = 800;
-	constexpr int window_height = 800;
+	constexpr int window_width  = 1024;
+	constexpr int window_height = 1024;
 	constexpr bool fullscreen = false;
-	constexpr char* window_title = "CPSC 453: VulkanLaunchpadStarter Complete Demo";
+	constexpr char* window_title = "CPSC 453: HW1 Starter";
 
 	// Use a monitor if we'd like to open the window in fullscreen mode:
 	GLFWmonitor* monitor = nullptr;
@@ -287,7 +299,7 @@ int main(int argc, char** argv)
 	VkSwapchainCreateInfoKHR swapchain_create_info = {};
 	swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchain_create_info.surface = vk_surface;
-	swapchain_create_info.minImageCount = surface_capabilities.minImageCount;
+	swapchain_create_info.minImageCount = surface_capabilities.minImageCount + 1;
 	swapchain_create_info.imageArrayLayers = 1u;
 	swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchain_create_info.preTransform = surface_capabilities.currentTransform;
@@ -314,10 +326,10 @@ int main(int argc, char** argv)
 	}
 	
 	// Create a vector of VkImages with enough memory for all the swap chain's images:
-	std::vector<VkImage> swap_chain_images(surface_capabilities.minImageCount);
+	std::vector<VkImage> swap_chain_images(swapchain_create_info.minImageCount);
 	// Use vkGetSwapchainImagesKHR to write VkImage handles into swap_chain_images.data()!
 	
-	result = vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &surface_capabilities.minImageCount, 
+	result = vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &swapchain_create_info.minImageCount, 
 							swap_chain_images.data());
 	VKL_CHECK_VULKAN_RESULT(result);
 	
@@ -345,7 +357,7 @@ int main(int argc, char** argv)
 		framebufferData.colorAttachmentImageDetails.imageFormat = surface_format.format;
 		framebufferData.colorAttachmentImageDetails.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		VkClearValue clearValue;
-		clearValue.color = {  0.2f, 0.2f, 0.2f, 1.0f  };		
+		clearValue.color = {  0.1f, 0.1f, 0.1f, 1.0f  };		
 		framebufferData.colorAttachmentImageDetails.clearValue = clearValue;
 
 		// We don't need the depth attachment now, but keep it in mind for later!
@@ -361,8 +373,8 @@ int main(int argc, char** argv)
 	}
 	VKL_LOG("Task 1.8 done.");
 
-	// Usman: ok we should now be able to pass geometry data to the GPU
-	teapotCreateGeometryAndBuffers();
+	// Now create initial geometry and pass it to the GPU
+	lineInitGeometryAndBuffers();
 	
 	/* --------------------------------------------- */
 	// Task 1.9:  Implement the Render Loop
@@ -372,7 +384,7 @@ int main(int argc, char** argv)
     	vklStartRecordingCommands();
 		
     	// Your commands here
-		teapotDraw();
+		lineDraw();
 
     	vklEndRecordingCommands();
     	vklPresentCurrentSwapchainImage();
@@ -385,7 +397,7 @@ int main(int argc, char** argv)
 	/* --------------------------------------------- */
 	// Task 1.10: Cleanup
 	/* --------------------------------------------- */
-	teapotDestroyBuffers();
+	lineDestroyBuffers();
 	vklDestroyFramework();
 
 	return EXIT_SUCCESS;
@@ -409,6 +421,58 @@ void handleGlfwKeyCallback(GLFWwindow* glfw_window, int key, int scancode, int a
 
 	if (action == GLFW_RELEASE) {
 		g_isGlfwKeyDown[key] = false;
+	}
+
+	// Handle translation in the x direction which is triggered by the 
+	// LEFT and RIGHT cursor keys.
+		if (action == GLFW_REPEAT && ( key == GLFW_KEY_RIGHT || key == GLFW_KEY_LEFT ) ) { 
+		dy = 0.0f;
+		if ( key == GLFW_KEY_RIGHT ) {
+			tx += Dx;
+			dx = Dx;
+		} else {
+			tx -= Dx;
+			dx = -Dx;
+		}
+
+		// check for wrap around
+		if (tx > 1.0f) {
+			tx = -1.0f;
+			dx = -2.0f;
+		}
+		if ( tx < -1.0f) {
+			tx = 1.0f;
+			dx = 2.0f;
+		}
+		
+		// update geometry
+		lineUpdateGeometryAndBuffers();
+	}
+
+	// Handle translation in the y direction which is triggered by the 
+	// DOWN and UP cursor keys.
+	if (action == GLFW_REPEAT && ( key == GLFW_KEY_UP || key == GLFW_KEY_DOWN ) ) { 
+		dx = 0.0;
+		if ( key == GLFW_KEY_UP ) {
+			ty += Dy;
+			dy = Dy;
+		} else {
+			ty -= Dy;
+			dy = -Dy;
+		}
+
+		// check for wrap around
+		if (ty > 1.0f) {
+			ty = -1.0f;
+			dy = -2.0f;
+		}
+		if ( ty < -1.0f) {
+			ty = 1.0f;
+			dy = 2.0f;
+		}
+		
+		// update geometry
+		lineUpdateGeometryAndBuffers();
 	}
 
 	// We mark the window that it should close if ESC is pressed:

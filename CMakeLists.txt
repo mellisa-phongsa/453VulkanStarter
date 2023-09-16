@@ -33,17 +33,17 @@ endif()
 #=======================================#
 add_subdirectory(VulkanLaunchpadStarter)
 
-set(PROJECT_NAME StarterDemo)
+set(PROJECT_NAME HW1Starter)
 
 #=============#
 # StarterDemo #
 #=============#
 add_executable(${PROJECT_NAME} 
-    Demo/src/Main.cpp 
+    HW1/src/Main.cpp
+    HW1/src/LineGeometry.h
+    HW1/src/LineGeometry.cpp
     VulkanLaunchpadStarter/src/VulkanHelpers.h
-    VulkanLaunchpadStarter/src/VulkanHelpers.cpp 
-    VulkanLaunchpadStarter/src/Teapot.h 
-    VulkanLaunchpadStarter/src/Teapot.cpp 
+    VulkanLaunchpadStarter/src/VulkanHelpers.cpp  
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanLaunchpad)
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanLaunchpadStarter/src)
