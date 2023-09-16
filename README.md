@@ -17,7 +17,9 @@ It is based on the [VulkanLaunchpadStarter](https://github.com/cg-tuwien/VulkanL
    If needed, roll back the submodule to the above commit by issuing the following command in the `VulkanLaunchpadStarter` directory:
    ```bash
     git checkout <commit hash>
-   ``` 
+   ```
+4. Prior to compiling, please change the primitive topology in the basic graphics pipeline provided by VulkanLaunchpad to line strips. Please see the comments in `HW1/src/LineGeometry.cpp` for details.    
+
 3. Compile via CMake. Please review the [Setup Instructions](https://github.com/cg-tuwien/VulkanLaunchpad#setup-instructions) for `VulkanLaunchpadStarter` to setup your IDE and build environment.
 
 ## Available Examples and Skeletons
