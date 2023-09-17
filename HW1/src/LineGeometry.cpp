@@ -38,8 +38,8 @@ void lineInitGeometryAndBuffers() {
   
   vertices = std::vector<glm::vec3>( mNumLineVertices ) ;
   for (size_t i = 0; i < mNumLineVertices; i++) {
-    float theta =  2 * M_PI * i / (mNumLineVertices-1);
-    float r = 0.8 * glm::cos(2 * theta);
+    float theta =  2.0f * glm::pi<float>() * static_cast<float>(i) / static_cast<float>(mNumLineVertices-1);
+    float r = 0.8 * glm::cos(2.0f * theta);
     glm::vec3 vert = glm::vec3(r * glm::cos(theta), r * glm::sin(theta), 1.0f);
     vertices[i] = vert; 
   }

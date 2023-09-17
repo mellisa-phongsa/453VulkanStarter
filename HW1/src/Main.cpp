@@ -20,6 +20,7 @@
 #include <vector>
 #include <unordered_map>
 #include <limits>
+#include <set>
 
 /* ------------------------------------------------ */
 // Some more little helpers directly declared here:
@@ -66,6 +67,42 @@ std::vector<const char*> getRequiredInstanceExtensions();
  */
 uint32_t selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkSurfaceKHR surface);
 
+static std::set<std::string> QuerySupportedLayers() {
+	static std::set<std::string> supportedLayers{};
+	static bool layersAreSet = false;
+
+	if (layersAreSet == false)
+	{
+		uint32_t count;
+		vkEnumerateInstanceLayerProperties(&count, nullptr); //get number of extensions
+
+		std::vector<VkLayerProperties> layers(count);
+		vkEnumerateInstanceLayerProperties(&count, layers.data()); //populate buffer
+
+		for (auto const& layer : layers) {
+			supportedLayers.insert(layer.layerName);
+		}
+		layersAreSet = true;
+	}
+	return supportedLayers;
+}
+
+static std::vector<char const*> FilterSupportedLayers(std::vector<char const*> const& layers)
+{
+	auto const supportedLayers = QuerySupportedLayers();
+	std::vector<char const*> result{};
+	for (auto const& layer : layers)
+	{
+		if (supportedLayers.find(layer) != supportedLayers.end()) {
+			printf("Layer %s is supported by this device.\n", layer);
+			result.emplace_back(layer);
+		}
+		else {
+			printf("Layer %s is not supported by this device.\n", layer);
+		}
+	}
+	return result;
+}
 
 // tx and ty keep track of wrap around
 float tx = 0.0f;
@@ -146,11 +183,16 @@ int main(int argc, char** argv)
 
 	// Layers enable additional functionality. We'd like to enable the standard validation layer, 
 	// so that we get meaningful and descriptive error messages whenever we mess up something:
+	std::vector<const char*> enabled_layers{};
 	if (!hlpIsInstanceLayerSupported("VK_LAYER_KHRONOS_validation")) {
-		VKL_EXIT_WITH_ERROR("Validation layer \"VK_LAYER_KHRONOS_validation\" is not supported.");
+		VKL_WARNING("Validation layers are not supported!");
+		//VKL_EXIT_WITH_ERROR("Validation layer \"VK_LAYER_KHRONOS_validation\" is not supported.");
 	}
-	VKL_LOG("Validation layer \"VK_LAYER_KHRONOS_validation\" is supported.");
-	std::vector<const char*> enabled_layers{ "VK_LAYER_KHRONOS_validation" };
+	else
+	{
+		VKL_LOG("Validation layer \"VK_LAYER_KHRONOS_validation\" is supported.");
+		enabled_layers.emplace_back("VK_LAYER_KHRONOS_validation");
+	}
 
 	// Tie everything from above together in an instance of VkInstanceCreateInfo:
 	VkInstanceCreateInfo instance_create_info = {}; // Zero-initialize every member
@@ -249,9 +291,15 @@ int main(int argc, char** argv)
 	// - The other parameters are not required (ensure that they are zero-initialized).
 	//   Finally, use vkCreateDevice to create the device and assign its handle to vk_device!
 	
-	const std::vector<const char*> device_extensions = {
+	std::vector<const char*> device_extensions = {
     	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
+
+	// For Macos compatibility
+	auto const supportedExtension = FilterSupportedLayers(std::vector<char const *>{
+		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+	});
+	device_extensions.insert(device_extensions.end(), supportedExtension.begin(), supportedExtension.end());
 
 	VkDeviceCreateInfo device_create_info = {};
 	device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
