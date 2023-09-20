@@ -23,8 +23,6 @@ extern float ty;
 extern float dx;
 extern float dy;
 
-VkPipeline pipeline{};
-
 
 /**
  * Create line geometry that is to be drawn. 
@@ -63,30 +61,6 @@ void lineInitGeometryAndBuffers() {
   //    indices.data(), sizeof(indices[0]) * indices.size(),
   //    VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-    pipeline = vklCreateGraphicsPipeline(VklGraphicsPipelineConfig{
-		// Vertex Shader from memory:
-			"#version 450\n"
-			"layout(location = 0) in vec3 position;\n"
-			"void main() {\n"
-			"    gl_Position = vec4(position.x, -position.y, position.z, 1);\n"
-			"}\n",
-		// Fragment shader from memory:
-			"#version 450\n"
-			"layout(location = 0) out vec4 color; \n"
-			"void main() {  \n"
-			"    color = vec4(1, 0, 0, 1); \n"
-			"}\n",
-		// Further config parameters:
-		{
-			VkVertexInputBindingDescription { 0, sizeof(glm::vec3), VK_VERTEX_INPUT_RATE_VERTEX }
-		},
-		{
-			VkVertexInputAttributeDescription { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0u }
-		},
-		VK_POLYGON_MODE_FILL,
-		VK_CULL_MODE_NONE,
-		{ /* no descriptors */ }
-	}, /* load shaders from memory: */ true, PrimitiveTopology::eLineStrip);
 }
 
 /**
@@ -119,7 +93,6 @@ void lineUpdateGeometryAndBuffers() {
 void lineDestroyBuffers() {
   auto device = vklGetDevice();
   vklDestroyHostCoherentBufferAndItsBackingMemory( mLineVertices );
-  vklDestroyGraphicsPipeline(pipeline);
   // vklDestroyHostCoherentBufferAndItsBackingMemory( mLineIndices ); 
 }
 
@@ -147,7 +120,7 @@ void lineDraw() {
   assert(currentSwapChainImageIndex < vklGetNumFramebuffers());
   assert(currentSwapChainImageIndex < vklGetNumClearValues());
 
-  cb.bindPipeline( vk::PipelineBindPoint::eGraphics, pipeline);
+  cb.bindPipeline( vk::PipelineBindPoint::eGraphics, vklGetBasicPipeline());
   
   cb.bindVertexBuffers(0u, {mLineVertices}, {vk::DeviceSize{0}});
   //cb.bindIndexBuffer(vk::Buffer{ mLineIndices }, vk::DeviceSize{ 0 }, vk::IndexType::eUint32);
