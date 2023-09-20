@@ -3,6 +3,8 @@
 #include <VulkanLaunchpad.h>
 #include <vulkan/vulkan.hpp>
 
+#include "LinePipeline.hpp"
+
 // A vector to organize geometry on the GPU.
 // Also need a buffer on the GPU to copy the geometry data to.
 
@@ -23,6 +25,7 @@ extern float ty;
 extern float dx;
 extern float dy;
 
+std::shared_ptr<MyApp::LinePipeline> linePipeline{};
 
 /**
  * Create line geometry that is to be drawn. 
@@ -44,6 +47,8 @@ void lineInitGeometryAndBuffers() {
     vertices[i] = vert; 
   }
 
+  linePipeline = std::make_shared<MyApp::LinePipeline>();
+
   // Need indices if using indexed drawing.
 
   // std::vector<unsigned int> indices;
@@ -61,6 +66,30 @@ void lineInitGeometryAndBuffers() {
   //    indices.data(), sizeof(indices[0]) * indices.size(),
   //    VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
+ //   pipeline = vklCreateGraphicsPipeline(VklGraphicsPipelineConfig{
+	//	// Vertex Shader from memory:
+	//		"#version 450\n"
+	//		"layout(location = 0) in vec3 position;\n"
+	//		"void main() {\n"
+	//		"    gl_Position = vec4(position.x, -position.y, position.z, 1);\n"
+	//		"}\n",
+	//	// Fragment shader from memory:
+	//		"#version 450\n"
+	//		"layout(location = 0) out vec4 color; \n"
+	//		"void main() {  \n"
+	//		"    color = vec4(1, 0, 0, 1); \n"
+	//		"}\n",
+	//	// Further config parameters:
+	//	{
+	//		VkVertexInputBindingDescription { 0, sizeof(glm::vec3), VK_VERTEX_INPUT_RATE_VERTEX }
+	//	},
+	//	{
+	//		VkVertexInputAttributeDescription { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0u }
+	//	},
+	//	VK_POLYGON_MODE_FILL,
+	//	VK_CULL_MODE_NONE,
+	//	{ /* no descriptors */ }
+	//}, /* load shaders from memory: */ true, PrimitiveTopology::eLineList);
 }
 
 /**
@@ -93,7 +122,8 @@ void lineUpdateGeometryAndBuffers() {
 void lineDestroyBuffers() {
   auto device = vklGetDevice();
   vklDestroyHostCoherentBufferAndItsBackingMemory( mLineVertices );
-  // vklDestroyHostCoherentBufferAndItsBackingMemory( mLineIndices ); 
+  linePipeline.reset();
+	// vklDestroyHostCoherentBufferAndItsBackingMemory( mLineIndices ); 
 }
 
 /**
@@ -120,7 +150,7 @@ void lineDraw() {
   assert(currentSwapChainImageIndex < vklGetNumFramebuffers());
   assert(currentSwapChainImageIndex < vklGetNumClearValues());
 
-  cb.bindPipeline( vk::PipelineBindPoint::eGraphics, vklGetBasicPipeline());
+  cb.bindPipeline( vk::PipelineBindPoint::eGraphics, linePipeline->GetPipeline());
   
   cb.bindVertexBuffers(0u, {mLineVertices}, {vk::DeviceSize{0}});
   //cb.bindIndexBuffer(vk::Buffer{ mLineIndices }, vk::DeviceSize{ 0 }, vk::IndexType::eUint32);

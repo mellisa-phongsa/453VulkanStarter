@@ -41,6 +41,8 @@ add_executable(${PROJECT_NAME}
     HW1/src/Main.cpp
     HW1/src/LineGeometry.h
     HW1/src/LineGeometry.cpp
+    HW1/src/LinePipeline.hpp
+    HW1/src/LinePipeline.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanLaunchpad)
 target_include_directories(${PROJECT_NAME} PRIVATE VulkanLaunchpad/src)
